@@ -12,7 +12,8 @@ COPY run-server /usr/local/bin
 COPY app /app
 
 RUN chmod 755 /usr/local/bin/run-server && \
-    chmod 755 /app/bat/chk.sh
+    chmod 755 /app/bat/chk.sh && \
+    chmod 755 /app/cgi-bin/tsukutter.fcgi
 
 EXPOSE 80 443
 
