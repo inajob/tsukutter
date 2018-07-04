@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs003
+spec:
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: slow
+  mountOptions:
+    - hard
+  nfs:
+    path: /var/data/003
+    server: 45.76.209.244
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-claim-tsukutter
+  namespace: tsukutter
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+  storageClassName: slow
+

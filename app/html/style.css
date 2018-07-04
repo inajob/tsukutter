@@ -1,0 +1,108 @@
+html,body{
+	margin:0px;
+	padding:0px;
+}
+body{
+	background-color:#ddeeff;
+	font-size:small;
+}
+h1{
+	/*text-align:center;*/
+	/*background-color:#0099dd;*/
+	background-color:#9999dd;
+	color:white;
+	padding:0.2em;
+	margin:0px;
+	background-image:url(tsu_big.png);
+	background-repeat: no-repeat;
+	padding-left:120px;
+}
+
+h2{
+	background-color:#eeffff;
+	padding:0.2em;
+	margin:1em;
+}
+h3{
+	background-color:white;
+	border:solid #0099dd;
+	border-width:1px 1px 1px 1em;
+	margin:0px;
+	padding:0.1em;
+	font-size:small;
+}
+
+.center{
+	text-align:center;
+	color:border;
+}
+.right{
+	text-align:right;
+}
+.right div{
+	float:right;
+}
+ul,li{
+	margin:0px;
+}
+div.fbox{
+	float:left;
+	padding:1em;
+	margin:1em;
+	background-color:#dde;
+}
+div.frame{
+	background-color:#eeeeee;
+	border:solid;
+	border-width:1px 5px 5px 1px;
+	margin:1em;
+	padding:3px;
+}
+
+td.img_td{
+	width:48px;
+}
+div.image_div{
+	width:48px;
+	height:48px;
+	background-color:white;
+
+}
+.image{
+	width:48px;
+	height:48px;
+	background-color:white;
+}
+div.desc{
+	/*background-color:red;*/
+}
+div.piece{
+	background-color:white;
+	border:solid 1px;
+	margin-left:10px;
+	margin-right:10px;
+	margin-top:1px;
+
+	border-radius: 10px;		/* CSS3草案 */
+	-webkit-border-radius: 10px;	/* Safari,Google Chrome用 */
+	-moz-border-radius: 10px;	/* Firefox用 */
+}
+.clear{
+	clear:both;
+}
+div#more{
+	color:blue;
+	text-align:center;
+	font-size:large;
+	cursor:pointer;
+}
+img{
+	border:none;
+}
+
+a:hover{
+	background-color:#ddffff;
+}
+.template{
+	display:none;
+}

@@ -1,0 +1,315 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>tsukutter</title>
+  <link rel="stylesheet" href="style.css" type="text/css">
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-3635234-2");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>
+
+  
+  <script type="text/javascript" src="prototype.js"></script>
+  <script type="text/javascript">
+//AjaxRequest
+Function.prototype.ajaxRequest = function (self,url,method,postbody,asyn) {
+  var f = this;
+  var a=[];
+  var i;
+  for(i=5;i<arguments.length;i++)a.push(arguments[i]);
+        return new Ajax.Request(
+                                                        url,
+                                                        {
+                                                                method:method,
+                                                                postBody:postbody,
+                                                                onComplete:function(e){
+                                                                                var ar=[];
+                                                                                var i;
+                                                                                for(i=0;i<arguments.length;i++){
+                                                                                        ar.push(arguments[i]);
+                                                                                }
+                                                                                f.apply(self,ar.concat(a));
+                                                                        },
+                                                                asynchronous :asyn
+                                                        });
+}
+
+//=====================================================================
+function bindElements(datas,pelm){
+    var elm = null;
+    var ret = {};
+    var postFix = "_tmpl";
+    var j,i;
+    pelm.id="";
+    //pelm.style.display="block";
+    if(datas instanceof Array){
+        var ls = pelm.childNodes;
+        for(i=0;i<ls.length;i++){
+            for(j=0;j<datas.length;j++){
+                if(ls[i].id == datas[j] + postFix){
+                    ret[datas[j]] = ls[i]; // match?
+                    ls[i].id=""
+                    break;
+                }
+            }
+            var cn = ls[i].childNodes;
+            if(cn.length!=0){
+                var l = bindElements(datas,ls[i]);
+                for(j in l){
+                    ret[j] = l[j]; // marge child nodes
+                }
+            }
+        }
+		ret.elm = pelm
+    }
+    return ret
+}
+//=====================================================================
+	
+	var gBitQueue = {};
+	
+	function bit(obj,s){
+		
+		//key R_223ba38bdef89c308a398c26f88837e6 
+		//user tsukutter
+		var test = s.match(/http:\/\/bit\.ly\/([a-zA-Z0-9]+)/);
+		if(test){
+			var url = "http://api.bit.ly/expand?version=2.0.1&login=tsukutter&apiKey=R_223ba38bdef89c308a398c26f88837e6&format=json&callback=bit_call&shortUrl="+test[0]+""
+			
+			gBitQueue[test[1]]=obj.parentNode;
+			var scr = document.createElement("script");
+			scr.src = url;
+			document.body.appendChild(scr);
+			return
+		}
+
+		var test2 = s.match(/http:\/\/t\.co\/([a-zA-Z0-9]+)/);
+		if(test2){
+			//  http://api.unshort.me/?r=h ttp://tinyurl.com/cn3m36&t=jsonp&callback=fun 
+			// http://orgurl.turutosiya.com/api/v1/?url=http://j.mp/org-url
+			//http://ux.nu/api/short?format=json&url=
+			//http://urllonger.net/api/longer?url=
+			//var url = "http://urllonger.net/api/longer?url="+encodeURIComponent(test2[0])+"&callback=unshort_call";
+			var url = "http://longurlplease.appspot.com/api/v1.1?q="+(test2[0])+'&callback=unshort_call';
+
+			gBitQueue[test2[0]]=obj.parentNode;
+			//gBitQueue.push(obj.parentNode);
+			var scr = document.createElement("script");
+			scr.src = url;
+			document.body.appendChild(scr);
+			return
+		}
+	}
+	function unshort_call(obj){
+		var t,tt;
+		var o;
+		for(var x in obj){
+		t = obj[x].escapeHTML()
+		tt=x;
+		}
+		o = gBitQueue[tt];
+		o.innerHTML = "<span><a href='"+t+"'>"+t+"</a><a href='http://b.hatena.ne.jp/entry/"+t+"'><img src='http://b.hatena.ne.jp/entry/image/"+t+"' /><img src='http://d.hatena.ne.jp/images/b_entry.gif' /></a></span>"
+	}
+
+	function bit_call(obj){
+		var t;
+		var o;
+		for(var x in obj["results"]){
+			t = obj["results"][x]["longUrl"].escapeHTML()
+			o = gBitQueue[x]
+			o.innerHTML = "<span><a href='"+t+"'>"+t+"</a><a href='http://b.hatena.ne.jp/entry/"+t+"'><img src='http://b.hatena.ne.jp/entry/image/"+t+"' /><img src='http://d.hatena.ne.jp/images/b_entry.gif' /></a></span>"
+		}
+	}
+
+	function makePiece(text_list,name,img){
+		var d = $("piece_tmpl").cloneNode(true);
+		var p = bindElements(["piece_image","piece_desc","piece_image_a"],d);
+		p.piece_image_a.href="http://twitter.com/" + name;
+		p.piece_image.src=img;
+		var s = "";
+		for(var i = 0; i < text_list.length; i++){
+			s += makeLine(text_list[i].escapeHTML()) + "<br />";
+		}
+		p.piece_desc.innerHTML = s;
+		return p;
+	}
+	
+	function makeLine(s){
+		// http: ...
+		// @name
+		
+		var t = s;
+		//t = t.replace(/(http(|s):\/\/[^\s\*()<>]*)/g,"<span><a href='$1' onmouseover='bit(this,\"$1\")'>$1</a><a href='http://b.hatena.ne.jp/entry/$1'><img src='http://b.hatena.ne.jp/entry/image/$1' /><img src='http://d.hatena.ne.jp/images/b_entry.gif' /></a></span>");
+		t = t.replace(/(http(|s):\/\/[a-zA-Z0-9%#~_\-.?\/=:]*)/g,"<span><a href='$1' onmouseover='bit(this,\"$1\")'>$1</a><a href='http://b.hatena.ne.jp/entry/$1'><img src='http://b.hatena.ne.jp/entry/image/$1' /><img src='http://d.hatena.ne.jp/images/b_entry.gif' /></a></span>");
+		t = t.replace(/@([a-zA-Z0-9_]+)/g,"<a href='http://twitter.com/$1'>@$1</a><a href='http://b.hatena.ne.jp/entry/http://twitter.com/$1'><img src='http://b.hatena.ne.jp/entry/image/http://twitter.com/$1' /><img src='http://d.hatena.ne.jp/images/b_entry.gif' /></a>")
+		return t
+	}
+	
+	var g_num = 0;
+	var hobj = null;
+	function loadPage(obj){
+		hobj = eval("(" + obj.responseText + ")");
+		//alert("l:"+hobj["logfile"]+obj.responseText)
+		var datas = hobj["data"];
+		//datas.reverse();
+		var tmp_obj = null;
+		var tmp_list = [];
+		var i;
+		for(i = 0; i  < datas.length;i++){
+			if(tmp_obj!= null && datas[i]["screen_name"] != tmp_obj["screen_name"]){
+				// todo: show
+				var d = makePiece(tmp_list ,tmp_obj["screen_name"], tmp_obj["profile_image_url"]);
+				$("feed").appendChild(d.elm);
+				tmp_list = [];
+			}
+			tmp_list.push(datas[i]["text"]);
+			tmp_obj = datas[i];
+			//var d = makePiece(datas[i]["text"],datas[i]["screen_name"],datas[i]["profile_image_url"]);
+			//$("feed").appendChild(d.elm);
+			g_num++;
+			//if(g_num>20)return;
+		}
+		if(tmp_list.length != 0){
+			var d = makePiece(tmp_list , tmp_obj["screen_name"], tmp_obj["profile_image_url"]);
+			$("feed").appendChild(d.elm);
+		}
+		//alert("hello")
+		//loadPage.ajaxRequest(this,"log"+(hobj["logfile"]-1)+".json","post","",true);
+	}
+	function more(){
+		loadPage.ajaxRequest(this,"/cgi-bin/tsukutter.fcgi?n="+g_num,"post","",true);
+	}
+	
+	function init(){
+		$("more").onclick=more;
+		loadPage.ajaxRequest(this,"current.json","post","",true);
+	}
+document.observe("dom:loaded",function(){
+			init();
+			});
+
+  </script>
+</head>
+
+<body>
+
+<script src="../mh/mh.js"></script>
+<h1>
+つくったー(<a href="http://twitter.com/tsukutter">@tsukutter</a>) 
+	<div class="right">
+	<!--<script type="text/javascript" language="javascript" src="http://twittercounter.com/embed/?username=tsukutter&style=blue"></script>-->
+
+<img src="http://image.clip.livedoor.com/counter/http://inajob.no-ip.org:10080/tsukutter/" />
+<img src="http://image.clip.livedoor.com/counter/http://inajob.no-ip.org:10080/tsukutter/index.html" />
+<a href="http://b.hatena.ne.jp/entry/http://inajob.no-ip.org:10080/tsukutter/">
+<img src="http://b.hatena.ne.jp/entry/image/http://inajob.no-ip.org:10080/tsukutter/">
+<img src="http://d.hatena.ne.jp/images/b_entry.gif" width="16" height="12" style="border: none;"
+ alt="このエントリーを含むはてなブックマーク" title="このエントリーを含むはてなブックマーク" />
+</a>
+<img src="http://b.hatena.ne.jp/entry/image/http://inajob.no-ip.org:10080/tsukutter/index.html"><span style="font-size:xx-small">(index.htmlにしなきゃ良かった)</span><br />
+</div>
+
+	</h1>
+
+<h2 class="center">作ったものを紹介しよう</h2>
+
+<div class="frame">
+<h3>なにこれ？</h3>
+作ったものを皆に見てもらうためのサービス <br />
+<br />
+作った物を多くの人に見てもらいたい。そんなあなたのためのサービスです。
+最近は小さいWebアプリなどであれば本当に数時間で作れてしまうものもあるくらいです。そういうものを作ったときはぜひ「つくったー」で紹介してください。<br />
+つくったーで紹介が増えればつくったーを見る人が増える。良い循環が生まれるんじゃないかなー？ と思っています。
+
+<br style="clear:both;" />
+<div class="fbox">
+<h3>つくったー例</h3>
+見てる人が実際に使えるものが望ましいです 以下想定される/されない つくったー例
+<ul>
+<li>ウェブアプリ</li>
+<li>グリモンとかのスクリプト</li>
+<li>普通のアプリケーション</li>
+<li>バージョンアップ告知</li>
+</ul>
+</div>
+
+<!--
+<div class="fbox">
+<h3>つくったーNG例</h3>
+<ul>
+<li>彼女・嫁 (二次元・三次元問わず)</li>
+<li>ご飯の類 （レシピを作った などは可）</li>
+</ul>
+</div>
+-->
+
+
+<div class="fbox">
+<h3>利用方法</h3>
+<p>
+①Twitterで <a href="http://twitter.com/tsukutter">つくったー</a> をフレンドに登録<br />
+②何かを作ったらその内容をTwitterで <span style="font-size:xx-large;color:red;">@<span style="color:blue;">tsu</span>kutter</span> というフレーズに続けて発言しよう<br />
+③その内容がつくったーに取り込まれます（反映には時間がかかります）
+</p>
+</div>
+
+
+<br style="clear:both;" />
+
+<h3>将来の予定</h3>
+<a href="http://ryo.hayamin.com/idea/top">ひらめいったー</a> みたいにスターで評価できたりReplyを反応させたりしたい。
+</div>
+
+<div class="frame">
+<h3>関連ページ</h3>
+<a href="http://d.hatena.ne.jp/inajob/">INAの日記</a> 感想・要望はこちらまで<br />
+<a href="http://twitter.com/ina_ani">@ina_ani in Twitter</a> あんまりしゃべりませんが、苦情・お問い合わせ・感想・要望があればこちらか↑のはてなまで<br />
+<a href="http://twitter.com/Mai_iaM">人工無能Mai in Twitter</a> もう一つのTwitterアプリ<br /><br />
+<a href="http://inajob.dip.jp/douyo/douyo.html">どぅよ?</a> 本を怪しいタグ付きで紹介<br />
+<a href="http://inajob.dip.jp/tnd/tnd.html">つんどいったー</a> 姉妹プロジェクト 積んでる本を**かるーく**紹介<br />
+<a href="http://ryo.hayamin.com/idea/top">ひらめいったー</a> つくったーのネタを思いついたきっかけ
+</div>
+<div class="frame">
+<h3>つくったー一覧</h3>
+<div id="feed">
+</div>
+<div id="more">
+	<a href="javascript:void(0);">
+	<span>More</span>
+	</a>
+</div>
+</div>
+
+<div class="template">
+	<div class="piece" id="piece_tmpl">
+		<table><tr>
+		<td class="img_td"><div class="image_div"><a id="piece_image_a_tmpl" href="#"><img class="image" id="piece_image_tmpl" /></a></div></td>
+		<td><div class="desc" id="piece_desc_tmpl" ></div></td>
+		</tr></table>
+	</div>
+</div>
+<!--
+<div class="frame">
+<h3>ほかにつくったもの</h3>
+<script src="http://www.gmodules.com/ig/ifr?url=http://inajob.no-ip.org/dev/intro/gprofread.xml&amp;synd=open&amp;w=320&amp;h=600&amp;title=INA+Profile%26Products&amp;border=%23ffffff%7C0px%2C1px+solid+%2382CAFA%7C0px%2C2px+solid+%23BDEDFF%7C0px%2C3px+solid+%23E0FFFF&amp;output=js"></script>
+</div>
+-->
+<div class="frame">
+<h3>更新履歴・お知らせ</h3>
+<dl>
+<dt>2008/2/11</dt><dd>つくったー</dd>
+</dl>
+ルータ不調に付きしばらくアクセスできませんでした 復活<br />
+一部のメッセージが2回配信されてしまいました 修正？<br />
+</div>
+
+</body>
+</html>
